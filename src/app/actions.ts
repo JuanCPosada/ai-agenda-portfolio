@@ -18,11 +18,17 @@ const eventSchema = z.object({
 
 export async function parseEventFromText(input: string) {
     try {
+        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+            console.error('MISSING API KEY: GOOGLE_GENERATIVE_AI_API_KEY is not defined in .env');
+            return { success: false, error: 'API Key missing' };
+        }
+        console.log('Parsing text:', input);
         const { object } = await generateObject({
-            model: google('gemini-1.5-flash'), // Using Gemini 1.5 Flash
+            model: google('gemini-2.5-flash'),
             schema: eventSchema,
             prompt: `Extract calendar event details from the following text. Today's date is ${new Date().toISOString()}. Text: "${input}"`,
         });
+        console.log('Parsed object:', object);
 
         // Save to database
         const event = await prisma.event.create({
@@ -34,11 +40,13 @@ export async function parseEventFromText(input: string) {
                 isSmartlyScheduled: true,
             },
         });
+        console.log('Saved event:', event);
 
         return { success: true, event };
     } catch (error) {
-        console.error('Failed to parse event:', error);
-        return { success: false, error: 'Failed to create event from text.' };
+        console.error('DETAILED ERROR:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return { success: false, error: errorMessage };
     }
 }
 

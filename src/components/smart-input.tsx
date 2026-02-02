@@ -23,7 +23,7 @@ export function SmartInput() {
                 setInput('');
                 router.refresh(); // Refresh to show new event
             } else {
-                alert('Failed to create event');
+                alert(`Error: ${result.error || 'Failed to create event'}`);
             }
         } catch (e) {
             console.error(e);
