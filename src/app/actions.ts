@@ -1,17 +1,11 @@
 'use server';
 
 import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL || "file:./dev.db",
-        },
-    },
-});
+const prisma = new PrismaClient();
 
 
 // Schema for the event structure we want to extract
@@ -25,7 +19,7 @@ const eventSchema = z.object({
 export async function parseEventFromText(input: string) {
     try {
         const { object } = await generateObject({
-            model: openai('gpt-4o'), // Or 'gpt-3.5-turbo'
+            model: google('gemini-1.5-flash'), // Using Gemini 1.5 Flash
             schema: eventSchema,
             prompt: `Extract calendar event details from the following text. Today's date is ${new Date().toISOString()}. Text: "${input}"`,
         });
